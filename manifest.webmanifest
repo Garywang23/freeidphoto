@@ -1,0 +1,15 @@
+{
+  "name": "FreeIDPhoto · 免费证件照",
+  "short_name": "证件照",
+  "description": "免费在线证件照制作:AI 抠图、换底色、6 寸相纸拼版,本地处理不上传",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#1a73e8",
+  "lang": "zh-CN",
+  "icons": [
+    { "src": "favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ],
+  "categories": ["photo", "utilities", "productivity"]
+}
