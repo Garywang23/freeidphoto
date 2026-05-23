@@ -297,7 +297,7 @@ async function cutoutViaOnnx(bitmap){
     // 自托管模型(同源)— 国内访问无障碍 + 不依赖 staticimgly.com
     publicPath: new URL('./models/', location.href).href,
     debug: false,
-    model: 'small',
+    model: 'medium',
     output: { format: 'image/png', quality: 0.95 },
     progress: (key, current, total) => {
       if(key && (key.startsWith('fetch:') || key.startsWith('compute:'))){
@@ -308,7 +308,18 @@ async function cutoutViaOnnx(bitmap){
   const outBmp = await createImageBitmap(outBlob);
   const out = document.createElement('canvas');
   out.width = outBmp.width; out.height = outBmp.height;
-  out.getContext('2d').drawImage(outBmp,0,0);
+  const ctx = out.getContext('2d');
+  ctx.drawImage(outBmp,0,0);
+  // alpha 阈值后处理:清掉半透明背景残留(< 80 直接透明,> 200 完全不透明,中间平滑)
+  const img = ctx.getImageData(0,0,out.width,out.height);
+  const d = img.data;
+  for(let i=3; i<d.length; i+=4){
+    const a = d[i];
+    if(a < 80) d[i] = 0;
+    else if(a > 200) d[i] = 255;
+    else d[i] = Math.round(((a - 80) / 120) * 255);
+  }
+  ctx.putImageData(img, 0, 0);
   return out;
 }
 
