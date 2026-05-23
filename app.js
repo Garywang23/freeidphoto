@@ -210,7 +210,7 @@ async function handleFile(file){
 
 // ---------- 抠图 ----------
 async function runCutout(){
-  const tip = state.engine==='onnx' ? 'ONNX 高质量抠图中(首次需下载 ~40MB 模型,稍候)…' : '本地 AI 抠图中…';
+  const tip = state.engine==='onnx' ? 'ONNX 高质量抠图中(首次需下载 ~85MB 模型,稍候)…' : '本地 AI 抠图中…';
   showLoader(true, tip);
   try{
     if(state.engine==='onnx'){
@@ -261,7 +261,7 @@ async function cutoutViaMediaPipe(bitmap){
   });
 }
 
-// 高质量:@imgly/background-removal(浏览器端 ONNX,首次会下载 ~40MB 模型,之后缓存)
+// 高质量:@imgly/background-removal(浏览器端 ONNX,medium 模型首次下载 ~85MB,之后缓存)
 // 多 CDN 备份,提升国内访问成功率
 // 版本必须和 setup-models.ps1 里的 @imgly/background-removal-data 版本对齐
 const ONNX_CDN_URLS = [
