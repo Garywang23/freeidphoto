@@ -1,0 +1,17 @@
+# 依赖 / 临时
+node_modules/
+.cache/
+*.log
+.DS_Store
+Thumbs.db
+
+# 部署产物 / 测试
+.wrangler/
+.vercel/
+
+# 编辑器
+.idea/
+.vscode/
+*.swp
+
+# 注意:models/ 是模型权重,要 commit 进 git,不要忽略

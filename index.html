@@ -12,6 +12,20 @@
 <meta name="author" content="FreeIDPhoto">
 <meta name="baidu-site-verification" content="codeva-7brSJNlNlf" />
 
+<!-- CSP:模型自托管同源,只需放开 ESM 库 CDN(多镜像兜底,国内可达) -->
+<meta http-equiv="Content-Security-Policy" content="
+  default-src 'self' 'unsafe-inline' 'unsafe-eval' blob: data:;
+  connect-src 'self' blob: data:
+    https://esm.sh https://cdn.jsdelivr.net https://fastly.jsdelivr.net https://gcore.jsdelivr.net
+    https://npm.elemecdn.com https://cdn.staticfile.org https://unpkg.com;
+  script-src 'self' 'unsafe-inline' 'unsafe-eval' blob:
+    https://esm.sh https://cdn.jsdelivr.net https://fastly.jsdelivr.net https://gcore.jsdelivr.net
+    https://npm.elemecdn.com https://cdn.staticfile.org https://unpkg.com;
+  worker-src 'self' blob:;
+  img-src 'self' data: blob:;
+  style-src 'self' 'unsafe-inline';
+">
+
 <link rel="canonical" href="https://zhaopian.116.ccwu.cc/">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%231a73e8'/%3E%3Ctext x='32' y='42' font-family='Arial' font-size='28' font-weight='800' fill='%23fff' text-anchor='middle'%3EID%3C/text%3E%3C/svg%3E">
 <link rel="apple-touch-icon" href="favicon.svg">

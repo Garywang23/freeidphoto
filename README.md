@@ -39,6 +39,23 @@
 | `manifest.webmanifest` | PWA 配置 |
 | `favicon.svg` | 图标 |
 | `robots.txt` / `sitemap.xml` | SEO |
+| `setup-models.ps1` | **首次部署前必跑**,把 ONNX 模型下载到 `./models/`(国内镜像) |
+| `models/` | 自托管的 ONNX 模型(同源加载,国内可达,~17MB) |
+
+## 首次部署前的关键一步:下载模型
+
+ONNX 高质量抠图需要 ~17MB 的模型权重。为了让国内用户也能用,我们**不依赖** `staticimgly.com`,
+而是把模型托管在自己域名下。在 PowerShell 里跑一次:
+
+```powershell
+cd D:\Codex\id-photo
+.\setup-models.ps1
+```
+
+脚本会从 `registry.npmmirror.com`(阿里云国内镜像)下载 `@imgly/background-removal-data` 的 `small` 模型,
+解压到 `./models/`。**这个目录必须 commit 到 git 一起部署**。
+
+> ⚠️ Cloudflare Pages 单文件 ≤25 MB,所以代码里写死用 `model: 'small'`(~17MB),不用 medium/large。
 
 > 注:已移除 remove.bg 远程抠图路径,纯静态、零后端、零 API key。
 

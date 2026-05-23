@@ -262,18 +262,40 @@ async function cutoutViaMediaPipe(bitmap){
 }
 
 // 高质量:@imgly/background-removal(浏览器端 ONNX,首次会下载 ~40MB 模型,之后缓存)
+// 多 CDN 备份,提升国内访问成功率
+const ONNX_CDN_URLS = [
+  'https://esm.sh/@imgly/background-removal@1.5.5',
+  'https://fastly.jsdelivr.net/npm/@imgly/background-removal@1.5.5/+esm',
+  'https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.5.5/+esm',
+  'https://gcore.jsdelivr.net/npm/@imgly/background-removal@1.5.5/+esm',
+];
 let imglyMod = null;
 async function cutoutViaOnnx(bitmap){
   if(!imglyMod){
-    imglyMod = await import('https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.5.5/dist/browser.mjs');
+    let lastErr = null;
+    for(const url of ONNX_CDN_URLS){
+      try{
+        loaderText.textContent = `加载模型库:${new URL(url).host}…`;
+        imglyMod = await import(url);
+        break;
+      }catch(e){ lastErr = e; console.warn('CDN 失败,尝试下一个:', url, e); }
+    }
+    if(!imglyMod) throw new Error('所有 CDN 都加载失败,请检查网络。最后错误:'+(lastErr&&lastErr.message||lastErr));
   }
-  const removeBackground = imglyMod.default || imglyMod.removeBackground;
+  const removeBackground = imglyMod.removeBackground || imglyMod.default;
+  if(typeof removeBackground !== 'function'){
+    throw new Error('background-removal 模块加载异常,请刷新重试');
+  }
   // 把 bitmap 转 blob 给 imgly
   const tmp = document.createElement('canvas');
   tmp.width = bitmap.width; tmp.height = bitmap.height;
   tmp.getContext('2d').drawImage(bitmap,0,0);
   const srcBlob = await new Promise(r=>tmp.toBlob(r,'image/png'));
   const outBlob = await removeBackground(srcBlob, {
+    // 自托管模型(同源)— 国内访问无障碍 + 不依赖 staticimgly.com
+    publicPath: new URL('./models/', location.href).href,
+    model: 'small',   // small=~17MB,medium=~40MB(CF Pages 单文件 ≤25MB,用 small)
+    debug: false,
     progress: (key, current, total) => {
       if(key && key.startsWith('fetch:')){
         loaderText.textContent = `下载模型 ${(current/1024/1024).toFixed(1)} / ${(total/1024/1024).toFixed(1)} MB…`;
