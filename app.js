@@ -287,17 +287,21 @@ async function cutoutViaOnnx(bitmap){
   if(typeof removeBackground !== 'function'){
     throw new Error('background-removal 模块加载异常,请刷新重试');
   }
-  // 把 bitmap 画到 canvas 传给 imgly
+  // 把 bitmap 画到 canvas,导出 Blob 包装成 File 给 imgly
   const tmp = document.createElement('canvas');
   tmp.width = bitmap.width; tmp.height = bitmap.height;
   tmp.getContext('2d').drawImage(bitmap,0,0);
-  const outBlob = await removeBackground(tmp, {
+  const srcBlob = await new Promise(r=>tmp.toBlob(r,'image/png'));
+  const srcFile = new File([srcBlob], 'input.png', { type: 'image/png' });
+  const outBlob = await removeBackground(srcFile, {
     // 自托管模型(同源)— 国内访问无障碍 + 不依赖 staticimgly.com
     publicPath: new URL('./models/', location.href).href,
     debug: false,
+    model: 'small',
+    output: { format: 'image/png', quality: 0.95 },
     progress: (key, current, total) => {
-      if(key && key.startsWith('fetch:')){
-        loaderText.textContent = `下载模型 ${(current/1024/1024).toFixed(1)} / ${(total/1024/1024).toFixed(1)} MB…`;
+      if(key && (key.startsWith('fetch:') || key.startsWith('compute:'))){
+        loaderText.textContent = `${key} ${(current/1024/1024).toFixed(1)} / ${(total/1024/1024).toFixed(1)} MB…`;
       }
     }
   });
