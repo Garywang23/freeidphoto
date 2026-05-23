@@ -202,9 +202,9 @@ async function handleFile(file){
   if(!file.type.startsWith('image/')){ alert('请选择图片文件'); return; }
   const bmp = await createImageBitmap(file);
   state.sourceBitmap = bmp;
+  state.cutoutCanvas = null;
   stepUpload.classList.add('hidden');
   stepEdit.classList.remove('hidden');
-  await runCutout();
   renderPreview();
 }
 
@@ -325,11 +325,25 @@ async function cutoutViaOnnx(bitmap){
 
 // ---------- 渲染预览(裁切到规格 + 换背景) ----------
 function renderPreview(){
-  if(!state.cutoutCanvas) return;
   const target = mmToPx(state.size);            // 目标像素 e.g. 295×413
   previewCv.width = target.w;
   previewCv.height = target.h;
   const ctx = previewCv.getContext('2d');
+
+  // 还没抠图:直接显示原图(居中 cover)
+  if(!state.cutoutCanvas){
+    if(!state.sourceBitmap) return;
+    ctx.fillStyle = '#f0f3f8';
+    ctx.fillRect(0,0,target.w,target.h);
+    const src = state.sourceBitmap;
+    const sAR = src.width/src.height;
+    const tAR = target.w/target.h;
+    let dw,dh;
+    if(sAR > tAR){ dh = target.h; dw = dh*sAR; }
+    else        { dw = target.w; dh = dw/sAR; }
+    ctx.drawImage(src,(target.w-dw)/2,(target.h-dh)/2,dw,dh);
+    return;
+  }
 
   // 1. 画背景
   if(state.bg.css.startsWith('linear-gradient')){
@@ -385,7 +399,8 @@ function bindEnginePicker(){
   cards.forEach(card=>{
     card.addEventListener('click', async ()=>{
       const newEngine = card.dataset.engine;
-      if(newEngine === state.engine) return;
+      // 同引擎且已抠图:跳过
+      if(newEngine === state.engine && state.cutoutCanvas) return;
       state.engine = newEngine;
       cards.forEach(c=>c.classList.toggle('active', c===card));
       const radio = card.querySelector('input[type=radio]');
